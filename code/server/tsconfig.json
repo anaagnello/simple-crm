@@ -10,6 +10,9 @@
       "outDir": "./build",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "sourceMap": true
-   }
+      "sourceMap": true,
+      "esModuleInterop": true // to be able to use supertest
+   },
+   "include": ["src/**/*.ts", "tests/**/*.ts"],
+   "exclude": ["node_modules", "build"]
 }

@@ -25,3 +25,9 @@ Terminal 2:
 cd code/client
 npm run start
 ```
+
+To run tests, run the following commands (note, the server does not need to be running for this but the DB will be interacted with)
+```sh
+cd code/server
+npm test
+```
