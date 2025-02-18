@@ -102,18 +102,15 @@ describe("Simple CRM API", () => {
     it("should update a user", async () => {
         var user = await createUserDB("Angela", "Baby", 3, "123-456-7890");
 
-        // verify user data before updating
-        let response = await request(app).get("/users");
+        // Verify the user data before updating
+        let response = await request(app).get(`/users/${user.id}`);
         expect(response.status).toBe(200);
-        expect(response.body).toBeInstanceOf(Array);
-        expect(response.body.length).toBeGreaterThanOrEqual(1);
-        let createdUser = response.body.find((u: User) => u.id === user.id);
-        expect(createdUser).toBeDefined();
-        expect(createdUser.firstName).toBe("Angela");
-        expect(createdUser.lastName).toBe("Baby");
-        expect(createdUser.age).toBe(3);
-        expect(createdUser.phoneNumber).toBe("123-456-7890");
-        expect(createdUser.notes.length).toBe(0);
+        expect(response.body).toBeInstanceOf(Object);
+        expect(response.body.firstName).toBe("Angela");
+        expect(response.body.lastName).toBe("Baby");
+        expect(response.body.age).toBe(3);
+        expect(response.body.phoneNumber).toBe("123-456-7890");
+        expect(response.body.notes.length).toBe(0);
 
         const req = {
             firstName: "Stefano",
@@ -143,21 +140,38 @@ describe("Simple CRM API", () => {
             "This is another note");
         const secondNoteDateAdded = new Date(secondNote.dateAdded);
 
-        const userResponse = await request(app).get('/users');
+        const userResponse = await request(app).get(`/users/${user.id}`);
         expect(userResponse.status).toBe(200);
-        expect(userResponse.body).toBeInstanceOf(Array);
-        expect(userResponse.body.length).toBeGreaterThanOrEqual(1);
-        const createdUser = userResponse.body.find((u: User) => u.id === user.id);
-        expect(createdUser).toBeDefined();
-        expect(createdUser.notes.length).toBe(2);
-        expect(createdUser.notes[0].note).toBe("This is another note");
-        expect(createdUser.notes[1].note).toBe("This is a note");
+        expect(userResponse.body).toBeInstanceOf(Object);
+        expect(userResponse.body.notes).toBeInstanceOf(Array);
+        expect(userResponse.body.notes.length).toBe(2);
+        expect(userResponse.body.notes[0].note).toBe("This is another note");
+        expect(userResponse.body.notes[1].note).toBe("This is a note");
         expect(secondNoteDateAdded.getTime()).toBeGreaterThan(firstNoteDateAdded.getTime());
     });
 
     it("should not create a note for invalid user", async () => {
         const req = { note: "This is a note" };
         const response = await request(app).post(`/users/1234/notes`).send(req);
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ error: "Invalid user id provided" });
+    });
+
+    it("should get a user", async () => {
+        var user = await createUserDB("Angela", "Baby", 3, "123-456-7890");
+
+        const response = await request(app).get(`/users/${user.id}`);
+        expect(response.status).toBe(200);
+        expect(response.body).toBeInstanceOf(Object);
+        expect(response.body.firstName).toBe("Angela");
+        expect(response.body.lastName).toBe("Baby");
+        expect(response.body.age).toBe(3);
+        expect(response.body.phoneNumber).toBe("123-456-7890");
+        expect(response.body.id).toEqual(user.id);
+    });
+
+    it("should not return a user for invalid id", async () => {
+        const response = await request(app).get("/users/1234");
         expect(response.status).toBe(404);
         expect(response.body).toEqual({ error: "Invalid user id provided" });
     });

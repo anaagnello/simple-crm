@@ -47,6 +47,20 @@ app.put("/users/:id", async (req, res) => {
     res.json(user);
 });
 
+app.get("/users/:id", async (req, res) => {
+    const user = await AppDataSource.manager
+        .getRepository(User)
+        .findOne({
+            where: { id: req.params.id },
+            relations: ["notes"]
+        });
+    if (!user) {
+        return res.status(404).send({ error: "Invalid user id provided" });
+    }
+    user.notes.sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime());
+    res.json(user);
+});
+
 app.post("/users/:id/notes", async (req, res) => {
     const user = await AppDataSource.manager
         .getRepository(User)

@@ -1,13 +1,18 @@
-import { AddUser } from "./add-user";
-import { Users } from "./users";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
+import { UserDetails } from "./user-details";
+import Home from "./Home";
 
 export const App: React.FC = () => {
     return (
-        <div className="p-4 space-y-8">
+        <Router>
             <h1 className="text-xl">SimpleCrm</h1>
-            <Users />
-            <AddUser />
-        </div>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/users" element={<Home />} />
+                <Route path="/users/:id" element={<UserDetails />} />
+            </Routes>
+        </Router>
     );
 };
 

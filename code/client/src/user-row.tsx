@@ -2,6 +2,8 @@ import axios from "axios";
 import { useState } from "react";
 import { User, Note } from "./types";
 import { AddNote } from "./add-note";
+import { Link } from "react-router-dom";
+import { Tooltip } from "react-tooltip";
 
 export const UserRow: React.FC<{ user: User }> = ({ user }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -45,7 +47,7 @@ export const UserRow: React.FC<{ user: User }> = ({ user }) => {
                     <form
                         onSubmit={handleSubmit}
                         className="space-y-4 p-4 rounded bg-gray-100 w-96">
-                        <h2 className="text-xl font-fold">Edit</h2>
+                        <h2 className="text-xl font-bold">Edit</h2>
                         {error && <p className="text-red-500">{error}</p>}
                         {success && (
                             <p className="text-green-500">User added successfully</p>
@@ -96,7 +98,13 @@ export const UserRow: React.FC<{ user: User }> = ({ user }) => {
                 &nbsp;
                 <AddNote user={user} onNoteAdded={handleNoteAdded} />
             </td>
-            <td>{firstName}</td>
+            <td>
+                <Link to={`/users/${user.id}`} data-tooltip-id={`tooltip-user-${user.id}`} data-tooltip-content="Open user details page"
+                    className="text-blue-500 underline hover:text-blue-700 hover:underline cursor-pointer">
+                    {firstName}
+                </Link>
+                <Tooltip id={`tooltip-user-${user.id}`} />
+            </td>
             <td>{lastName}</td>
             <td>{age}</td>
             <td>{phoneNumber}</td>

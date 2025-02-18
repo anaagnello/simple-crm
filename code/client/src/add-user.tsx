@@ -33,7 +33,7 @@ export const AddUser: React.FC = () => {
     };
     return (
         <form onSubmit={handleSubmit} className="space-y-4 p-4 rounded bg-gray-100 w-96">
-            <h2 className="text-xl font-fold">Add User</h2>
+            <h2 className="text-xl font-bold">Add User</h2>
             {error && <p className="text-red-500">{error}</p>}
             {success && <p className="text-green-500">User added successfully</p>}
             <input
