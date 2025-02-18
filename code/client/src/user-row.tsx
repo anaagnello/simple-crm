@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { User } from "./types";
 import axios from "axios";
+import { useState } from "react";
+import { User, Note } from "./types";
+import { AddNote } from "./add-note";
 
 export const UserRow: React.FC<{ user: User }> = ({ user }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -8,9 +9,11 @@ export const UserRow: React.FC<{ user: User }> = ({ user }) => {
     const [lastName, setLastName] = useState(user.lastName);
     const [age, setAge] = useState(`${user.age}`);
     const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber);
+    const [notes, setNotes] = useState(user.notes);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -30,6 +33,11 @@ export const UserRow: React.FC<{ user: User }> = ({ user }) => {
         }
         setLoading(false);
     };
+
+    const handleNoteAdded = (newNote: Note) => {
+        setNotes([newNote, ...notes]);
+    }
+
     if (isEditing) {
         return (
             <tr>
@@ -85,11 +93,22 @@ export const UserRow: React.FC<{ user: User }> = ({ user }) => {
         <tr key={user.id}>
             <td>
                 <button onClick={() => setIsEditing(true)}>Edit</button>
+                &nbsp;
+                <AddNote user={user} onNoteAdded={handleNoteAdded} />
             </td>
             <td>{firstName}</td>
             <td>{lastName}</td>
             <td>{age}</td>
             <td>{phoneNumber}</td>
+            <td className="max-h-32 overflow-y-auto">
+                <div className="max-h-32 overflow-y-auto">
+                    {notes.map(note => (
+                        <div key={note.id}>
+                            <p><span className="text-xs text-gray-500 mr-2">{new Date(note.dateAdded).toLocaleString()}</span>{note.note}</p>
+                        </div>
+                    ))}
+                </div>
+            </td>
         </tr>
     );
 };

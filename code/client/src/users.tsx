@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { User } from "./types";
 import { UserRow } from "./user-row";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const Users: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -23,6 +25,7 @@ export const Users: React.FC = () => {
                         <th>Last Name</th>
                         <th>Age</th>
                         <th>Phone Number</th>
+                        <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,6 +34,7 @@ export const Users: React.FC = () => {
                     ))}
                 </tbody>
             </table>
+            <ToastContainer />
         </div>
     );
 };
