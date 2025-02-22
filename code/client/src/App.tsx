@@ -2,11 +2,14 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import { UserDetails } from "./user-details";
 import Home from "./Home";
+import Modal from "react-modal";
 
-export const App: React.FC = () => {
+Modal.setAppElement("#root");
+
+const App: React.FC = () => {
     return (
         <Router>
-            <h1 className="text-xl">SimpleCrm</h1>
+            <h1 className="text-3xl font-bold mt-4 text-center">SimpleCrm</h1>
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/users" element={<Home />} />

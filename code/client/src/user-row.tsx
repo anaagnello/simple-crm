@@ -1,118 +1,88 @@
-import axios from "axios";
 import { useState } from "react";
 import { User, Note } from "./types";
-import { AddNote } from "./add-note";
+import AddNoteModal from "./add-note-modal";
 import { Link } from "react-router-dom";
 import { Tooltip } from "react-tooltip";
+import UserModal from "./user-modal";
 
-export const UserRow: React.FC<{ user: User }> = ({ user }) => {
-    const [isEditing, setIsEditing] = useState(false);
+export const UserRow: React.FC<{ user: User, onUserUpdated: (user: User) => void }> = ({ user, onUserUpdated }) => {
     const [firstName, setFirstName] = useState(user.firstName);
     const [lastName, setLastName] = useState(user.lastName);
     const [age, setAge] = useState(`${user.age}`);
     const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber);
     const [notes, setNotes] = useState(user.notes);
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
-        try {
-            await axios.put(`/api/users/${user.id}`, {
-                firstName,
-                lastName,
-                age,
-                phoneNumber,
-            });
-            setSuccess(true);
-            setIsEditing(false);
-        } catch (error) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setError((error as any).response.data);
-        }
-        setLoading(false);
-    };
+    const openUserModal = () => {
+        setIsUserModalOpen(true);
+    }
+
+    const closeUserModal = () => {
+        setIsUserModalOpen(false);
+    }
+
+    const handleUserUpdated = (updatedUser: User) => {
+        setFirstName(updatedUser.firstName);
+        setLastName(updatedUser.lastName);
+        setAge(`${updatedUser.age}`);
+        setPhoneNumber(updatedUser.phoneNumber);
+        onUserUpdated(updatedUser);
+        closeUserModal();
+    }
+
+    const openNoteModal = () => {
+        setIsNoteModalOpen(true);
+    }
+
+    const closeNoteModal = () => {
+        setIsNoteModalOpen(false);
+    }
 
     const handleNoteAdded = (newNote: Note) => {
         setNotes([newNote, ...notes]);
     }
 
-    if (isEditing) {
-        return (
-            <tr>
-                <td colSpan={6}>
-                    <form
-                        onSubmit={handleSubmit}
-                        className="space-y-4 p-4 rounded bg-gray-100 w-96">
-                        <h2 className="text-xl font-bold">Edit</h2>
-                        {error && <p className="text-red-500">{error}</p>}
-                        {success && (
-                            <p className="text-green-500">User added successfully</p>
-                        )}
-                        <input
-                            type="text"
-                            placeholder="First Name"
-                            value={firstName}
-                            onChange={e => setFirstName(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Last Name"
-                            value={lastName}
-                            onChange={e => setLastName(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Age"
-                            value={age}
-                            onChange={e => setAge(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Phone Number"
-                            value={phoneNumber}
-                            onChange={e => setPhoneNumber(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="block w-full p-2 bg-blue-500 text-white rounded">
-                            Update User
-                        </button>
-                    </form>
-                </td>
-            </tr>
-        );
-    }
     return (
-        <tr key={user.id}>
-            <td>
-                <button onClick={() => setIsEditing(true)}>Edit</button>
-                &nbsp;
-                <AddNote user={user} onNoteAdded={handleNoteAdded} />
+        <tr className="even:bg-sky-200 odd:bg-white" key={user.id}>
+            <td className="border border-gray-300 px-4 py-2 items-center">
+                <button className="mr-4 px-4 py-2 bg-blue-500 text-white rounded"
+                    onClick={() => openUserModal()}>Edit</button>
+                <UserModal
+                    isOpen={isUserModalOpen}
+                    onRequestClose={closeUserModal}
+                    title="Edit user"
+                    onSave={handleUserUpdated}
+                    user={user}
+                />
+                <button
+                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                    onClick={openNoteModal}
+                >
+                    Add Note
+                </button>
+                <AddNoteModal
+                    isOpen={isNoteModalOpen}
+                    onRequestClose={closeNoteModal}
+                    user={user}
+                    onNoteAdded={handleNoteAdded} />
             </td>
-            <td>
+            <td className="border border-gray-300 px-4 py-2">
                 <Link to={`/users/${user.id}`} data-tooltip-id={`tooltip-user-${user.id}`} data-tooltip-content="Open user details page"
                     className="text-blue-500 underline hover:text-blue-700 hover:underline cursor-pointer">
                     {firstName}
                 </Link>
                 <Tooltip id={`tooltip-user-${user.id}`} />
             </td>
-            <td>{lastName}</td>
-            <td>{age}</td>
-            <td>{phoneNumber}</td>
-            <td className="max-h-32 overflow-y-auto">
+            <td className="border border-gray-300 px-4 py-2">{lastName}</td>
+            <td className="border border-gray-300 px-4 py-2">{age}</td>
+            <td className="border border-gray-300 px-4 py-2">{phoneNumber}</td>
+            <td className="border border-gray-300 px-4 py-2 max-h-32 overflow-y-auto">
                 <div className="max-h-32 overflow-y-auto">
                     {notes.map(note => (
                         <div key={note.id}>
-                            <p><span className="text-xs text-gray-500 mr-2">{new Date(note.dateAdded).toLocaleString()}</span>{note.note}</p>
+                            <p className="text-xs text-gray-500 italic">{new Date(note.dateAdded).toLocaleString()}</p>
+                            <p>{note.note}</p>
                         </div>
                     ))}
                 </div>

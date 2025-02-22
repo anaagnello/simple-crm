@@ -31,9 +31,15 @@ export const UserDetails: React.FC = () => {
     const copyLink = () => {
         const url = window.location.href;
         navigator.clipboard.writeText(url).then(() => {
-            toast.success("User link copied to clipboard");
+            toast.success("User link copied to clipboard", {
+                hideProgressBar: true,
+                autoClose: 2000,
+            });
         }).catch(error => {
-            toast.error("Failed to copy user link to clipboard");
+            toast.error("Failed to copy user link to clipboard", {
+                hideProgressBar: true,
+                autoClose: 4000,
+            });
             console.log("Failed to copy url:", error);
         });
     }
