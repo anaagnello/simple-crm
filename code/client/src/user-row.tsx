@@ -1,11 +1,15 @@
+import axios from "axios";
 import { useState } from "react";
 import { User, Note } from "./types";
 import AddNoteModal from "./add-note-modal";
 import { Link } from "react-router-dom";
 import { Tooltip } from "react-tooltip";
 import UserModal from "./user-modal";
+import { confirmAlert } from "react-confirm-alert";
+import 'react-confirm-alert/src/react-confirm-alert.css';
+import { toast } from "react-toastify";
 
-export const UserRow: React.FC<{ user: User, onUserUpdated: (user: User) => void }> = ({ user, onUserUpdated }) => {
+export const UserRow: React.FC<{ user: User, onUserUpdated: (user: User) => void, onUserDeleted: (userId: number) => void }> = ({ user, onUserUpdated, onUserDeleted }) => {
     const [firstName, setFirstName] = useState(user.firstName);
     const [lastName, setLastName] = useState(user.lastName);
     const [age, setAge] = useState(`${user.age}`);
@@ -43,6 +47,39 @@ export const UserRow: React.FC<{ user: User, onUserUpdated: (user: User) => void
         setNotes([newNote, ...notes]);
     }
 
+    const handleDeleteUser = async () => {
+        try {
+            await axios.delete(`api/users/${user.id}`);
+            onUserDeleted(user.id);
+            toast.success("User deleted", {
+                hideProgressBar: true,
+                autoClose: 2000,
+            });
+        } catch (error) {
+            toast.error("Failed to delete user", {
+                hideProgressBar: true,
+                autoClose: 4000
+            });
+            console.log("Error deleting user", error);
+        }
+    };
+
+    const confirmDelete = () => {
+        confirmAlert({
+            message: "Are you sure you want to delete this user?",
+            buttons: [
+                {
+                    label: "Yes",
+                    onClick: handleDeleteUser
+                },
+                {
+                    label: "No",
+                    onClick: () => {}
+                }
+            ]
+        });
+    };
+
     return (
         <tr className="even:bg-sky-200 odd:bg-white" key={user.id}>
             <td className="border border-gray-300 px-4 py-2 items-center">
@@ -56,7 +93,7 @@ export const UserRow: React.FC<{ user: User, onUserUpdated: (user: User) => void
                     user={user}
                 />
                 <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                    className="mr-4 px-4 py-2 bg-blue-500 text-white rounded"
                     onClick={openNoteModal}
                 >
                     Add Note
@@ -66,6 +103,12 @@ export const UserRow: React.FC<{ user: User, onUserUpdated: (user: User) => void
                     onRequestClose={closeNoteModal}
                     user={user}
                     onNoteAdded={handleNoteAdded} />
+                <button
+                    className="px-4 py-2 bg-red-500 text-white rounded"
+                    onClick={confirmDelete}
+                >
+                    Delete User
+                </button>
             </td>
             <td className="border border-gray-300 px-4 py-2">
                 <Link to={`/users/${user.id}`} data-tooltip-id={`tooltip-user-${user.id}`} data-tooltip-content="Open user details page"

@@ -61,6 +61,28 @@ app.get("/users/:id", async (req, res) => {
     res.json(user);
 });
 
+app.delete("/users/:id", async (req, res) => {
+    try {
+        const user = await AppDataSource.manager
+            .getRepository(User)
+            .findOne({
+                where: { id: req.params.id },
+                relations: ["notes"]
+            });
+        if (!user) {
+            return res.status(404).send({ error: "Invalid user id provided" });
+        }
+
+        // delete the notes
+        await AppDataSource.manager.getRepository(Note).delete({ user: { id: req.params.id } });
+
+        await AppDataSource.manager.getRepository(User).remove(user);
+        res.status(204).send(); // No Content
+    } catch (error) {
+        res.status(500).send({ error: `Failed to delete user with id ${req.parmsid}` })
+    }
+});
+
 app.post("/users/:id/notes", async (req, res) => {
     const user = await AppDataSource.manager
         .getRepository(User)

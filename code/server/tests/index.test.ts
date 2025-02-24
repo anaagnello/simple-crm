@@ -175,4 +175,48 @@ describe("Simple CRM API", () => {
         expect(response.status).toBe(404);
         expect(response.body).toEqual({ error: "Invalid user id provided" });
     });
+
+    it("should delete a user", async () => {
+        var user = await createUserDB("Ana", "Employee", 1, "123-456-7890");
+        let response = await request(app).get(`/users/${user.id}`);
+        expect(response.status).toBe(200);
+        expect(response.body).toBeInstanceOf(Object);
+        expect(response.body.firstName).toBe("Ana");
+        expect(response.body.id).toEqual(user.id);
+        
+        response = await request(app).delete(`/users/${user.id}`);
+        expect(response.status).toBe(204);
+
+        response = await request(app).get(`/users/${user.id}`);
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ error: "Invalid user id provided" });
+    });
+
+    it("should delete a user that has notes", async () => {
+        var user = await createUserDB("Ana", "Employee", 1, "123-456-7890");
+
+        const firstNote = await addNoteToUserAPI(user.id, "This is a note");
+        const secondNote = await addNoteToUserAPI(user.id,
+            "This is another note");
+
+        let response = await request(app).get(`/users/${user.id}`);
+        expect(response.status).toBe(200);
+        expect(response.body).toBeInstanceOf(Object);
+        expect(response.body.firstName).toBe("Ana");
+        expect(response.body.id).toEqual(user.id);
+        expect(response.body.notes.length).toBe(2);
+        
+        response = await request(app).delete(`/users/${user.id}`);
+        expect(response.status).toBe(204);
+
+        response = await request(app).get(`/users/${user.id}`);
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ error: "Invalid user id provided" });
+    });
+
+    it("should not delete a user for invalid id", async () => {
+        const response = await request(app).delete("/users/1234");
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ error: "Invalid user id provided" });
+    });
 });
