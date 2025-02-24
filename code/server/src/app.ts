@@ -98,4 +98,24 @@ app.post("/users/:id/notes", async (req, res) => {
     res.json(note);
 });
 
+app.delete("/users/:userId/notes/:noteId", async (req, res) => {
+    const { userId, noteId } = req.params;
+    try {
+        const note = await AppDataSource.manager
+            .getRepository(Note)
+            .findOne({
+                where: { id: noteId, user: { id: userId } }
+            });
+
+        if (!note) {
+            return res.status(404).send({ error: "Note was not found for the specified user" });
+        }
+
+        await AppDataSource.manager.getRepository(Note).remove(note);
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).send({ error: `Failed to delete note with id ${noteId} for user id ${userId}` })
+    }
+});
+
 export default app;

@@ -10,10 +10,10 @@ interface AddNoteModalProperties {
     isOpen: boolean;
     onRequestClose: () => void;
     onNoteAdded: (newNote: Note) => void;
-    user: User;
+    userId: number;
 }
 
-const AddNoteModal: React.FC<AddNoteModalProperties> = ({ isOpen, onRequestClose, onNoteAdded, user }) => {
+const AddNoteModal: React.FC<AddNoteModalProperties> = ({ isOpen, onRequestClose, onNoteAdded, userId }) => {
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -21,7 +21,7 @@ const AddNoteModal: React.FC<AddNoteModalProperties> = ({ isOpen, onRequestClose
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post(`/api/users/${user.id}/notes`, {
+            const response = await axios.post(`/api/users/${userId}/notes`, {
                 note,
             });
             const newNote: Note = response.data;

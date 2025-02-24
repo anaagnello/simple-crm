@@ -219,4 +219,37 @@ describe("Simple CRM API", () => {
         expect(response.status).toBe(404);
         expect(response.body).toEqual({ error: "Invalid user id provided" });
     });
+
+    it("should delete a note", async () => {
+        var user = await createUserDB("Angela", "Baby", 3, "123-456-7890");
+
+        const firstNote = await addNoteToUserAPI(user.id, "This is a note");
+        const firstNoteDateAdded = new Date(firstNote.dateAdded);
+
+        const secondNote = await addNoteToUserAPI(user.id,
+            "This is another note");
+        const secondNoteDateAdded = new Date(secondNote.dateAdded);
+
+        let userResponse = await request(app).get(`/users/${user.id}`);
+        expect(userResponse.status).toBe(200);
+        expect(userResponse.body).toBeInstanceOf(Object);
+        expect(userResponse.body.notes).toBeInstanceOf(Array);
+        expect(userResponse.body.notes.length).toBe(2);
+
+        const response = await request(app).delete(`/users/${user.id}/notes/${secondNote.id}`)
+        expect(response.status).toBe(204);
+
+        userResponse = await request(app).get(`/users/${user.id}`);
+        expect(userResponse.status).toBe(200);
+        expect(userResponse.body).toBeInstanceOf(Object);
+        expect(userResponse.body.notes).toBeInstanceOf(Array);
+        expect(userResponse.body.notes.length).toBe(1);
+        expect(userResponse.body.notes[0].note).toBe("This is a note");
+    });
+
+    it("should not delete an invalid note", async () => {
+        const response = await request(app).delete("/users/1234/notes/1234");
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ error: "Note was not found for the specified user" });
+    });
 });

@@ -101,7 +101,7 @@ export const UserRow: React.FC<{ user: User, onUserUpdated: (user: User) => void
                 <AddNoteModal
                     isOpen={isNoteModalOpen}
                     onRequestClose={closeNoteModal}
-                    user={user}
+                    userId={user.id}
                     onNoteAdded={handleNoteAdded} />
                 <button
                     className="px-4 py-2 bg-red-500 text-white rounded"

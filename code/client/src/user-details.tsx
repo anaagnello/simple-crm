@@ -1,10 +1,16 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { User } from "./types";
+import { Note, User } from "./types";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { Tooltip } from "react-tooltip";
-import { FaArrowLeft, FaLink, FaUser, FaPhone, FaBirthdayCake } from 'react-icons/fa';
+import { FaArrowLeft, FaLink, FaUser, FaPhone, FaBirthdayCake, FaTrash } from 'react-icons/fa';
+import { confirmAlert } from "react-confirm-alert";
+import 'react-confirm-alert/src/react-confirm-alert.css';
+import AddNoteModal from "./add-note-modal";
+
+// Set the base URL for all Axios requests
+axios.defaults.baseURL = "http://localhost:5173/";
 
 export const UserDetails: React.FC = () => {
     const { id } = useParams();
@@ -12,6 +18,7 @@ export const UserDetails: React.FC = () => {
     const [user, setUser] = useState<User>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -46,6 +53,60 @@ export const UserDetails: React.FC = () => {
 
     const goBack = () => {
         navigate("/users");
+    };
+
+    const openNoteModal = () => {
+        setIsNoteModalOpen(true);
+    }
+
+    const closeNoteModal = () => {
+        setIsNoteModalOpen(false);
+    }
+
+    const handleNoteAdded = (newNote: Note) => {
+        if (user) {
+            setUser({
+                ...user,
+                notes: [newNote, ...user.notes]
+            });
+        }
+    }
+    const handleDeleteNote = async (noteId: number) => {
+        console.log('delete note with id '+ noteId + ' user ' + id);
+        try {
+            await axios.delete(`api/users/${id}/notes/${noteId}`);
+            setUser({
+                ...user!,
+                notes: user!.notes.filter(note => note.id !== noteId)
+            })
+            toast.success("Note deleted", {
+                hideProgressBar: true,
+                autoClose: 2000,
+            });
+        } catch (error) {
+            toast.error("Failed to delete note", {
+                hideProgressBar: true,
+                autoClose: 4000
+            });
+            console.log("Error deleting note", error);
+        }
+    };
+
+    const confirmDeleteNote = (noteId: number) => {
+        console.log("note ID to delete: ", noteId);
+        confirmAlert({
+            message: "Are you sure you want to delete this note?",
+            buttons: [
+                {
+                    label: "Yes",
+                    onClick: () => handleDeleteNote(noteId)
+                },
+                {
+                    label: "No",
+                    onClick: () => { }
+                }
+            ]
+        });
     };
 
     return (
@@ -85,14 +146,27 @@ export const UserDetails: React.FC = () => {
                     <div className="mt-6">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-xl font-bold">Notes added for this user</h3>
+                            <button
+                                className="px-4 py-2 bg-blue-500 text-white rounded"
+                                onClick={openNoteModal}
+                            >
+                                Add Note
+                            </button>
                         </div>
                         {user?.notes.length === 0 ? (
-                            <p className="text-center text-gray-500">No notes added for this user.</p>
+                            <p className="text-center text-gray-500">No notes added for this user. Add one using the button above.</p>
                         ) : (
                             <ul className="overflow-y-auto h-64 space-y-4">
                                 {user?.notes.map(note => (
                                     <li key={note.id} className="bg-white p-4 rounded-lg shadow-md">
-                                        <p className="text-sm text-gray-500 mb-2">{new Date(note.dateAdded).toLocaleString()}</p>
+                                        <div className="flex justify-between items-center w-full">
+                                            <p className="text-sm text-gray-500 mb-2">{new Date(note.dateAdded).toLocaleString()}</p>
+                                            <button className="text-red-500 hover:text-red-700"
+                                                onClick={() => confirmDeleteNote(note.id)}
+                                            >
+                                                <FaTrash size={18} />
+                                            </button>
+                                        </div>
                                         <p className="text-lg">{note.note}</p>
                                     </li>
                                 ))}
@@ -102,6 +176,12 @@ export const UserDetails: React.FC = () => {
                 </>
             )}
             <ToastContainer />
+            <AddNoteModal
+                isOpen={isNoteModalOpen}
+                onRequestClose={closeNoteModal}
+                userId={parseInt(id!, 10)}
+                onNoteAdded={handleNoteAdded}
+            />
         </div>
     );
 };
